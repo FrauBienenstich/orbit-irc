@@ -124,7 +124,7 @@ class Orbit {
     this.events.emit('left', channel);
   }
 
-  send(channel, message) {
+  send(channel, message, options) {
     logger.debug(`Send message to #${channel}: ${message}`);
 
     if(!message || message === '')
@@ -132,7 +132,7 @@ class Orbit {
 
     const data = {
       content: message,
-      from: this._orbitdb.user.id
+      from: options ? options.username : this._orbitdb.user.id
     };
 
     return this._getChannelFeed(channel)

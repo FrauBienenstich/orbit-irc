@@ -29,7 +29,7 @@ orbitClient.connect('178.62.241.75:3333', 'MrsOrbit', '').then(function (result)
 ircClient.addListener('message', function (from, to, message) {
     var userName = from;
     console.log(from + ' => ' + to + ': ' + message);
-    orbitClient.send(channel, `IRC <${from}> ${message}`);
+    orbitClient.send(channel, message, { username: from });
 });
 
 ircClient.addListener('error', function(message) {
