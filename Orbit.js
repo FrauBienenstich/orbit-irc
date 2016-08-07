@@ -110,6 +110,7 @@ class Orbit {
     };
 
     return this._orbitdb.eventlog(channel, dbOptions)
+    // db.add, use promises
       .then((db) => this._channels[channel].db = db)
       .then(() => this.events.emit('joined', channel))
       .then(() => true)
