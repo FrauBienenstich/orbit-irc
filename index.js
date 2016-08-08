@@ -3,25 +3,25 @@ const OrbitDB = require('orbit-db');
 const Post = require('ipfs-post');
 const Ipfs = require('ipfs-api');
 
-var channel = process.argv[2] || 'testchannel'
+const channel = process.argv[2] || 'testchannel'
 
-var ircClient = new irc.Client('irc.freenode.net', 'MrsOrbit', {
+const ircClient = new irc.Client('irc.freenode.net', 'MrsOrbit', {
   channels: ["#" + channel],
 });
 
-var ipfs = new Ipfs();
-var orbitdb;
-var db = {};
+const ipfs = new Ipfs();
+let orbitdb;
+let db = {};
 
-var sanitizeChannelName = (ircChannel) => {
-  var arr = ircChannel.split("")
+const sanitizeChannelName = (ircChannel) => {
+  let arr = ircChannel.split("")
   arr.shift()
   return arr.join('');
 }
 
 // writing message from  irc into orbit db
-var createMessage = (ipfs, message, from, to) => {
-  var sanitizedChannel = sanitizeChannelName(to)
+const createMessage = (ipfs, message, from, to) => {
+  const sanitizedChannel = sanitizeChannelName(to)
 
   const data = {
     content: message,
@@ -34,29 +34,30 @@ var createMessage = (ipfs, message, from, to) => {
     .catch(e => console.log(e))
 }
 
-OrbitDB.connect('178.62.241.75:3333', 'MrsOrbit', '', ipfs).then((res) => orbitdb = res);
+OrbitDB.connect('178.62.241.75:3333', 'MrsOrbit', '', ipfs)
+  .then((res) => orbitdb = res);
 
-ircClient.addListener('join', function (channelName, nick, message) {
+ircClient.addListener('join',  (channelName, nick, message) => {
   // notifications in orbit and irc that connection has happened:
-  var orbitText = `/me has now connected this channel with IRC.`
-  var ircText = `has now connected this channel with Orbit.`
+  const orbitText = `/me has now connected this channel with IRC.`
+  const ircText = `has now connected this channel with Orbit.`
   createMessage(ipfs, orbitText, nick, channelName)
   ircClient.action(channelName, ircText)
 
   // no more joining and sending, putting it all directly in the db. sets db instance per channel name/channel joined
-  var sanitizedChannel = sanitizeChannelName(channelName)
+  const sanitizedChannel = sanitizeChannelName(channelName)
   orbitdb.eventlog(sanitizedChannel)
     .then((database) => db[sanitizedChannel] = database)
     .catch(e => console.log(e))
 });
 
 //  by writing directly to the db user can be other than MrsOrbit (which is set initially when connecting to OrbitDB), 'from' gets set dynamically now depending on irc username who sends message
-ircClient.addListener('message', function (from, to, message) {
+ircClient.addListener('message', (from, to, message) => {
   console.log(from + ' => ' + to + ': ' + message);
   createMessage(ipfs, message, from, to);
 });
 
-ircClient.addListener('error', function(message) {
+ircClient.addListener('error', (message) => {
   console.log('error: ', message);
 });
 
