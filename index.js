@@ -3,15 +3,22 @@ const OrbitDB = require('orbit-db');
 const Post = require('ipfs-post');
 const Ipfs = require('ipfs-api');
 
-const channel = process.argv[2] || 'testchannel'
+// Usage:
+// node index.js <botname> <channel>
 
-const ircClient = new irc.Client('irc.freenode.net', 'MrsOrbit', {
-  channels: ["#" + channel],
-});
+const botName = process.argv[2] || 'MrsOrbit'
+const channel = process.argv[3] || 'testchannel'
 
 const ipfs = new Ipfs();
 let orbitdb;
 let db = {};
+
+const ircClient = new irc.Client('irc.freenode.net', botName, {
+  channels: ["#" + channel],
+});
+
+OrbitDB.connect('178.62.241.75:3333', botName, '', ipfs)
+  .then((res) => orbitdb = res);
 
 const sanitizeChannelName = (ircChannel) => {
   let arr = ircChannel.split("")
@@ -33,9 +40,6 @@ const createMessage = (ipfs, message, from, to) => {
     .then((post) => db[sanitizedChannel].add(post.Hash))
     .catch(e => console.log(e))
 }
-
-OrbitDB.connect('178.62.241.75:3333', 'MrsOrbit', '', ipfs)
-  .then((res) => orbitdb = res);
 
 ircClient.addListener('join',  (channelName, nick, message) => {
   // notifications in orbit and irc that connection has happened:
