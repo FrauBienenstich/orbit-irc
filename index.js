@@ -38,17 +38,21 @@ OrbitDB.connect('178.62.241.75:3333', 'MrsOrbit', '', ipfs)
   .then((res) => orbitdb = res);
 
 ircClient.addListener('join',  (channelName, nick, message) => {
-  // notifications in orbit and irc that connection has happened:
-  const orbitText = `/me has now connected this channel with IRC.`
-  const ircText = `has now connected this channel with Orbit.`
-  createMessage(ipfs, orbitText, nick, channelName)
-  ircClient.action(channelName, ircText)
+  console.log(nick + ' joined ' + channelName, message)
 
-  // no more joining and sending, putting it all directly in the db. sets db instance per channel name/channel joined
-  const sanitizedChannel = sanitizeChannelName(channelName)
-  orbitdb.eventlog(sanitizedChannel)
-    .then((database) => db[sanitizedChannel] = database)
-    .catch(e => console.log(e))
+  if(nick === botName) {
+    // notifications in orbit and irc that connection has happened:
+    const orbitText = `/me has now connected this channel with IRC.`
+    const ircText = `has now connected this channel with Orbit.`
+    createMessage(ipfs, orbitText, nick, channelName)
+    ircClient.action(channelName, ircText)
+
+    // no more joining and sending, putting it all directly in the db. sets db instance per channel name/channel joined
+    const sanitizedChannel = sanitizeChannelName(channelName)
+    orbitdb.eventlog(sanitizedChannel)
+      .then((database) => db[sanitizedChannel] = database)
+      .catch(e => console.log(e))
+  }
 });
 
 //  by writing directly to the db user can be other than MrsOrbit (which is set initially when connecting to OrbitDB), 'from' gets set dynamically now depending on irc username who sends message
